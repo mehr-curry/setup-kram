@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="bfd0a595-2a35-47f7-9711-e1fc4e43984a" Name="transfer-variable-between-sequences" Language="1033" Version="1.0.0.0" Manufacturer="nobody" UpgradeCode="4a86157d-7d9f-4c54-9e6f-4ee43e0e9269">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Feature Id="ProductFeature" Title="SetupProject1" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+
+    <!-- 1. Sichere und (zwangsweise) öffentliche Property anlegen. Das ist unser Zwischenspeicher -->
+    <!-- Id -> all-caps bedeutet "public" -->
+    <Property Id="TEST" Value="123" Secure="yes" />
+    <!-- 2. Verweis auf die CustomAction-Bibliothek deklarieren -->
+    <Binary Id="CustomActionLibrary" SourceFile="$(var.transfer-variable-between-sequences-ca.TargetDir)$(var.transfer-variable-between-sequences-ca.TargetName).CA.dll" />
+    <!-- 3. Setzende CustomAction deklarieren -->
+    <!-- Von dieser CustomAction wird die Variable "TEST" gesetzt. -->
+    <CustomAction Id="SetPropertyCustomAction" BinaryKey="CustomActionLibrary" DllEntry="SetPropertyCustomAction" Execute="immediate"/>
+    <!-- 4. Lesende CustomAction deklarieren -->
+    <!-- Diese CustomAction verwendet anschließend den neu gesetzten Wert. -->
+    <CustomAction Id="ReadPropertyCustomAction" BinaryKey="CustomActionLibrary" DllEntry="ReadPropertyCustomAction" Execute="immediate" Return="check" />
+    <!-- 4a. (Alternative) Lesende CustomAction deklarieren im "Verzögert"-Modus -->
+    <!-- Die obere CustomAction ist nur eine Art Initialisierung, die die Übergabe von Daten für die eigentliche CustomAction vorbereitet -->
+    <!-- Wichtig ist hier außerdem, dass der Wert des "Property"-Attributes und die Id der eigentlichen CustomAction identisch sind. -->
+    <CustomAction Id="ReadPropertyDeferredCustomAction.SetProperty" Property="ReadPropertyDeferredCustomAction" Value="test=[TEST]" />
+    <CustomAction Id="ReadPropertyDeferredCustomAction" BinaryKey="CustomActionLibrary" DllEntry="ReadPropertyDeferredCustomAction" Execute="deferred" Return="check" />
+
+    <!-- 5. Setzende CustomAction in die vorbereitende Sequenz einbinden -->
+    <InstallUISequence>
+      <Custom Action="SetPropertyCustomAction" After="CostFinalize" />
+    </InstallUISequence>
+
+    <!-- 6. Lesende CustomAction in die verarbeitende Sequenz einbinden -->
+    <InstallExecuteSequence>
+      
+      <Custom Action="ReadPropertyCustomAction" After="InstallFiles" />
+
+      <!-- 6a. (Alternative) Lesende, verzögerte CustomAction in die verarbeitende Sequenz einbinden -->
+      <Custom Action="ReadPropertyDeferredCustomAction.SetProperty" After="InstallFiles" />
+      <Custom Action="ReadPropertyDeferredCustomAction" After="InstallFiles" />
+
+    </InstallExecuteSequence>
+
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLFOLDER" Name="SetupProject1" />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+      <!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
+      <Component Id="ProductComponent">
+        <File Id="TextFile1.txt" KeyPath="yes" Source="TextFile1.txt" />
+        <!-- TODO: Insert files, registry keys, and other resources here. -->
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
