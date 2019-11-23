@@ -38,6 +38,7 @@
       <Custom Action="ReadPropertyCustomAction" After="InstallFiles" />
 
       <!-- 6a. (Alternative) Lesende, verzögerte CustomAction in die verarbeitende Sequenz einbinden -->
+      <!-- zur Sicherheit sollte die Initialisierungscustomaction vor der eigentlichen CustomAction ausgeführt werden. -->
       <Custom Action="ReadPropertyDeferredCustomAction.SetProperty" Before="ReadPropertyDeferredCustomAction" />
       <Custom Action="ReadPropertyDeferredCustomAction" After="InstallFiles" />
 
