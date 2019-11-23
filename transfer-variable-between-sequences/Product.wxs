@@ -24,6 +24,7 @@
     <!-- 4a. (Alternative) Lesende CustomAction deklarieren im "Verzögert"-Modus -->
     <!-- Die obere CustomAction ist nur eine Art Initialisierung, die die Übergabe von Daten für die eigentliche CustomAction vorbereitet -->
     <!-- Wichtig ist hier außerdem, dass der Wert des "Property"-Attributes und die Id der eigentlichen CustomAction identisch sind. -->
+    <!-- Nur verzögerte CustomActions werden im rechtlich erhöhten Kontext ausgeführt-->
     <CustomAction Id="ReadPropertyDeferredCustomAction.SetProperty" Property="ReadPropertyDeferredCustomAction" Value="test=[TEST]" />
     <CustomAction Id="ReadPropertyDeferredCustomAction" BinaryKey="CustomActionLibrary" DllEntry="ReadPropertyDeferredCustomAction" Execute="deferred" Return="check" />
 
@@ -32,9 +33,9 @@
       <Custom Action="SetPropertyCustomAction" After="CostFinalize" />
     </InstallUISequence>
 
-    <!-- 6. Lesende CustomAction in die verarbeitende Sequenz einbinden -->
     <InstallExecuteSequence>
-      
+
+      <!-- 6. Lesende CustomAction in die verarbeitende Sequenz einbinden -->
       <Custom Action="ReadPropertyCustomAction" After="InstallFiles" />
 
       <!-- 6a. (Alternative) Lesende, verzögerte CustomAction in die verarbeitende Sequenz einbinden -->
